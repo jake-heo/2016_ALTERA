@@ -1,0 +1,52 @@
+module histeq (valid, clk, rst, ydata, outY);
+
+	input	valid, clk, rst;
+	input	[7:0]	ydata;
+	
+	output	[7:0]	outY;
+	
+	reg	[18:0]	histY	[0:255];	
+	reg	[19:0]	ehistY	[0:255];
+	
+	reg	[18:0]	endnum;
+	integer		i;
+	
+	wire	[25:0]	aout;
+	
+	always @(posedge clk or negedge rst)	begin
+		if(!rst)	begin
+		
+			endnum	<= 19'b0;
+			
+			for(i=0; i<256; i=i+1)	begin
+				histY[i]		<= 19'b0;
+				ehistY[i]	<= 20'b0;
+			end
+			
+		end
+		else	if (valid && (endnum != 384000))	begin
+	
+				histY[ydata] <= histY[ydata] + 1'b1;
+				endnum <= endnum + 1'b1;
+			
+		end
+			
+		else	if (endnum == 384000)	begin			
+			ehistY[0] <= histY[0];
+				
+			for(i=0; i<255; i=i+1)	begin				
+				ehistY[i+1]	<= histY[i+1] + ehistY[i];					
+				histY[i+1]	<= 0;				
+			end
+				
+			histY[0] <= 0;
+			endnum <= 0;
+				
+		end
+	end
+	
+	assign aout = ehistY[ydata] * 6'b101100;
+	assign outY = aout[23:16];
+	
+endmodule
+		

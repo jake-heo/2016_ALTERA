@@ -1,0 +1,23 @@
+module frame_cnt(clk, rstn, valid, sig);
+
+input reg	clk;
+input reg	rstn;
+input reg	valid;
+output reg	sig;
+
+reg [18:0] counter;
+
+always @ (posedge clk or negedge rstn)
+begin
+	if(!rstn)	begin
+		counter <= 0;
+		sig	<= 0;
+	end
+	else if(counter != 383999)		counter <= counter + 1;
+	else	begin
+		counter <= 0
+		sig	<= ~sig;
+	end
+end
+
+endmodule
